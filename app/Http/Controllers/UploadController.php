@@ -12,7 +12,6 @@ class UploadController extends Controller
 {
     public function store(Request $request)
     {
-        # Validation Required #
         # Document: .docx, .xlsx, .pdf => pdf #
         # Image: .png, .jpg, .jpeg => jpeg #
         # Video: .avi, .mov, .mp4 => mp4 #
@@ -24,6 +23,10 @@ class UploadController extends Controller
          *    -> cari referensi FFMpeg untuk mengkonversikannya
          */
         try {
+            # Validation Required #
+            $request->validate([
+                'file' => ['required', 'mimes:pdf,doc,docx,png,jpg,jpeg,avi,mov,mp4']
+            ]);
             $file = $request->file('file');
             $ext = $file->getClientOriginalExtension();
             $folder = uniqid() . '-' . now()->timestamp;

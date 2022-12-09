@@ -16,14 +16,14 @@ class FileController extends Controller
     public function store(Request $request)
     {
         $attributes = $request->validate([
-            'title' => ['string', 'required']
+            'title' => ['string', 'required'],
         ]);
         try {
             $temporaryFile = TemporaryFile::where('folder', Session::get('folder'))->first();
-            # Running Job #
             if($temporaryFile){
                 if($temporaryFile->type == 'video'){
                     $attributes['path'] = "uploads/{$temporaryFile->folder}.mp4";
+                    # Running Job #
                     $this->dispatch(new VideoConverterJob($temporaryFile));
                 }elseif($temporaryFile->type == 'image'){
                     $attributes['path'] = "uploads/{$temporaryFile->folder}.jpeg";
