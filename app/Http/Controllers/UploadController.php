@@ -43,7 +43,7 @@ class UploadController extends Controller
                     'message' => 'temporary video successfully uploaded'
                 ]);
             }elseif($ext == 'png' || $ext == 'jpg' || $ext == 'jpeg'){
-                $image = Image::make($request->file('file'))->stream('jpeg', 100);
+                $image = Image::make($request->file('file'))->stream('jpeg', 50);
                 $path = "uploads/tmp/{$folder}/{$folder}.jpeg";
                 Storage::disk('public')->put($path, $image, 'public');
                 TemporaryFile::create([
@@ -83,6 +83,7 @@ class UploadController extends Controller
     public function destroy()
     {
         try {
+            # destroynya belum work well
             $temporaryFile = TemporaryFile::where('folder', Session::get('folder'))->first();
             Storage::delete("uploads/tmp/{$temporaryFile->folder}");
             Session::forget('folder');
