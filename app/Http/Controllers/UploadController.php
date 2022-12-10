@@ -12,35 +12,33 @@ class UploadController extends Controller
 {
     public function store(Request $request)
     {
+        # Gimana caranya, kalau reload setelah upload tmp juga ilang?
+        $unsaved = Session::get('folder') ?? false;
+        if($unsaved){
+            $unsavedFile = TemporaryFile::where('folder', $unsaved)->first();
+            Storage::deleteDirectory("uploads/tmp/{$unsavedFile->folder}");
+            Session::forget('folder');
+            $unsavedFile->delete();
+        }
+        
         # Document: .docx, .xlsx, .pdf => pdf #
         # Image: .png, .jpg, .jpeg => jpeg #
         # Video: .avi, .mov, .mp4 => mp4 #
-
-        /**
-         * 1. Klasifikasikan MimeType berdasarkan jenis arsip.
-         * 2. Pisahkan pada metode penyimpanan berdasarkan jenis media, tekstual sendiri, foto sendiri, video sendiri.
-         * 3. Konversikan tiap media dengan format standar: .pdf untuk tekstual, .jpeg untuk foto, .mp4 untuk video.
-         *    -> cari referensi FFMpeg untuk mengkonversikannya
-         */
-        try {
-            # Validation Required #
-            $request->validate([
-                'file' => ['required', 'mimes:pdf,doc,docx,png,jpg,jpeg,avi,mov,mp4']
-            ]);
+        $request->validate([
+            'file' => ['required', 'mimes:pdf,doc,docx,png,jpg,jpeg,avi,mov,mp4']
+        ]);
+        
+        try { 
             $file = $request->file('file');
             $ext = $file->getClientOriginalExtension();
             $folder = uniqid() . '-' . now()->timestamp;
             if($ext == 'avi' || $ext ==  'mov' || $ext ==  'mp4'){
-                $filename = 'video' . '.' . $ext;
+                $filename = "video.{$ext}";
                 $file->storeAs("uploads/tmp/{$folder}", $filename);
                 TemporaryFile::create([
                     'folder' => $folder,
                     'extension' => $ext,
                     'type' => 'video'
-                ]);
-                Session::put('folder', $folder);
-                return response()->json([
-                    'message' => 'temporary video successfully uploaded'
                 ]);
             }elseif($ext == 'png' || $ext == 'jpg' || $ext == 'jpeg'){
                 $image = Image::make($request->file('file'))->stream('jpeg', 50);
@@ -51,10 +49,6 @@ class UploadController extends Controller
                     'extension' => $ext,
                     'type' => 'image'
                 ]);
-                Session::put('folder', $folder);
-                return response()->json([
-                    'message' => 'temporary image successfully uploaded'
-                ]);
             }elseif($ext == 'docx' || $ext == 'xlsx' || $ext ==  'pdf'){
                 $filename = 'document' . '.' . $ext;
                 $file->storeAs("uploads/tmp/{$folder}", $filename);
@@ -63,17 +57,18 @@ class UploadController extends Controller
                     'extension' => $ext,
                     'type' => 'document'
                 ]);
-                Session::put('folder', $folder);
-                return response()->json([
-                    'message' => 'temporary document successfully uploaded'
-                ]);
             }else{
                 return response()->json([
                     'message' => 'unknown format'
                 ]);
             }
+            Session::put('folder', $folder);
+            return response()->json([
+                'message' => 'temporary file successfully uploaded'
+            ]);
+
         }catch (\Throwable $e) {
-            // Session::forget('folder');
+            Session::forget('folder');
             return response()->json([
                 'message' => $e->getMessage()
             ]);
@@ -82,10 +77,9 @@ class UploadController extends Controller
 
     public function destroy()
     {
-        try {
-            # destroynya belum work well
+        try { 
             $temporaryFile = TemporaryFile::where('folder', Session::get('folder'))->first();
-            Storage::delete("uploads/tmp/{$temporaryFile->folder}");
+            Storage::deleteDirectory("uploads/tmp/{$temporaryFile->folder}");
             Session::forget('folder');
             $temporaryFile->delete();
             return response()->json([

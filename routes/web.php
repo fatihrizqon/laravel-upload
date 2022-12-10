@@ -16,10 +16,8 @@ use App\Http\Controllers\UploadController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
-
-
+    return view('filepond.index');
+})->name('/');
 
 Route::get('/filepond', function () {
     return view('filepond.index');

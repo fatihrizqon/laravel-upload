@@ -33,9 +33,7 @@ class VideoConverterJob implements ShouldQueue
      */
     public function handle()
     {
-        FFMpeg::fromDisk('public')->open("uploads/tmp/{$this->temporaryFile->folder}/video.{$this->temporaryFile->extension}")->export()->toDisk('public')->inFormat(new \FFMpeg\Format\Video\X264())->save("uploads/{$this->temporaryFile->folder}.mp4");
-        Storage::delete("uploads/tmp/{$this->temporaryFile->folder}/video.mp4");
-        Storage::move("uploads/tmp/{$this->temporaryFile->folder}/{$this->temporaryFile->folder}.mp4", "uploads/{$this->temporaryFile->folder}.mp4");
+        FFMpeg::fromDisk('public')->open("uploads/tmp/{$this->temporaryFile->folder}/video.{$this->temporaryFile->extension}")->export()->toDisk('public')->inFormat(new \FFMpeg\Format\Video\X264())->save("uploads/videos/{$this->temporaryFile->folder}.mp4");
         Storage::deleteDirectory("uploads/tmp/{$this->temporaryFile->folder}");
         $this->temporaryFile->delete();
     }
