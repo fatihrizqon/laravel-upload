@@ -16,11 +16,6 @@ class FileController extends Controller
 {
     public function store(Request $request)
     {
-        // $attributes = $request->validate([
-        //     'title' => ['string', 'required'],
-        //     'file' => ['required']
-        // ]);
-        
         $validators = Validator::make($request->all(), [
             'title' => ['string', 'required'],
             'file' => ['required']
@@ -29,9 +24,9 @@ class FileController extends Controller
         $temporaryFile = TemporaryFile::where('folder', Session::get('folder'))->first();
         
         if($validators->fails()){
-            Storage::deleteDirectory("uploads/tmp/{$temporaryFile->folder}");
+            $temporaryFile ? Storage::deleteDirectory("uploads/tmp/{$temporaryFile->folder}") : null;
+            $temporaryFile ? $temporaryFile->delete() : null;
             Session::forget('folder');
-            $temporaryFile->delete();
             return redirect()->route('/')->with('warning', 'failed to store a new file.');
         }
         
@@ -50,7 +45,9 @@ class FileController extends Controller
                     Storage::deleteDirectory("uploads/tmp/{$temporaryFile->folder}");
                     $temporaryFile->delete();
                 }elseif($temporaryFile->type == 'document'){
-                    $attributes['path'] = "uploads/{$temporaryFile->folder}.pdf";
+                    $attributes['path'] = "uploads/documents/{$temporaryFile->folder}.{$temporaryFile->extension}";
+                    Storage::move("uploads/tmp/{$temporaryFile->folder}/document.{$temporaryFile->extension}", "uploads/documents/{$temporaryFile->folder}.{$temporaryFile->extension}");
+                    Storage::deleteDirectory("uploads/tmp/{$temporaryFile->folder}");
                     $temporaryFile->delete();
                 }else{
                     abort(403);

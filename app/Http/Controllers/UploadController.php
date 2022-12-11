@@ -15,10 +15,9 @@ class UploadController extends Controller
         # Gimana caranya, kalau reload setelah upload tmp juga ilang?
         $unsaved = Session::get('folder') ?? false;
         if($unsaved){
-            $unsavedFile = TemporaryFile::where('folder', $unsaved)->first();
-            Storage::deleteDirectory("uploads/tmp/{$unsavedFile->folder}");
+            TemporaryFile::where('folder', $unsaved)->first()->delete() ?? '';
+            Storage::deleteDirectory("uploads/tmp/{$unsaved}");
             Session::forget('folder');
-            $unsavedFile->delete();
         }
         
         # Document: .docx, .xlsx, .pdf => pdf #
