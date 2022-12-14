@@ -38,7 +38,7 @@ class FileController extends Controller
             if($temporaryFile){
                 if($temporaryFile->type == 'video'){
                     $attributes['path'] = "uploads/videos/{$temporaryFile->folder}.mp4";
-                    $this->dispatch(new VideoConverterJob($temporaryFile));
+                    $this->dispatch(new VideoConverterJob($temporaryFile)); # convert
                 }elseif($temporaryFile->type == 'image'){
                     $attributes['path'] = "uploads/images/{$temporaryFile->folder}.jpeg";
                     Storage::move("uploads/tmp/{$temporaryFile->folder}/{$temporaryFile->folder}.jpeg", "uploads/images/{$temporaryFile->folder}.jpeg");

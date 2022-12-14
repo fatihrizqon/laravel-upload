@@ -50,8 +50,9 @@
         FilePond.registerPlugin(FilePondPluginImagePreview);
         FilePond.registerPlugin(FilePondPluginFileValidateType);
         FilePond.create(document.querySelector('input[id="file"]'), {
-            acceptedFileTypes: ['image/png', 'image/jpg', 'image/jpeg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet', 'video/mp4', 'video/avi', 'video/mov'],
+            acceptedFileTypes: ['image/png', 'image/jpg', 'image/jpeg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.oasis.opendocument.spreadsheet', 'video/mp4', 'video/x-msvideo', 'video/quicktime'],
         });
+        // Ketika retry Kirim nya aktif lagi
         FilePond.setOptions({
             server: {
                 process: "{{ route('upload') }}",
